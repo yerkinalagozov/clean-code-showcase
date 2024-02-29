@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
+
+	"github.com/yerkinalagozov/clean-code-showcase.git/internal/commonentity"
 )
 
 type OrderItemStatus string
@@ -33,8 +35,23 @@ func (o *OrderItem) Status() *OrderItemStatus {
 	return &o.status
 }
 
-func (o *OrderItem) SetStatus(status OrderItemStatus) {
-	o.status = status
+func (o *OrderItem) SetOrderStatus(orderStatus string) error {
+	var err error
+	switch orderStatus {
+	case string(OrderItemStatusCreated):
+		o.status = OrderItemStatusCreated
+	case string(OrderItemStatusCanceled):
+		o.status = OrderItemStatusCanceled
+	case string(OrderItemStatusPaid):
+		o.status = OrderItemStatusPaid
+	case string(OrderItemStatusDelivered):
+		o.status = OrderItemStatusDelivered
+	case string(OrderItemStatusRefunded):
+		o.status = OrderItemStatusRefunded
+	default:
+		err = commonentity.ErrOrderItemStatusIsNotValid
+	}
+	return err
 }
 
 func (o *OrderItem) Product() ProductItems {

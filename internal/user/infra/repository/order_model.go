@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/yerkinalagozov/clean-code-showcase.git/internal/user/entity"
@@ -59,11 +60,14 @@ func (o *OrderData) MapToEntity() (entity.Order, error) {
 		return entity.Order{}, err
 	}
 	order.SetUser(entityUser)
-	order.SetOrderStatus(entity.OrderStatus(o.Status))
+	err = order.SetOrderStatus(o.Status)
+	if err != nil {
+		return entity.Order{}, fmt.Errorf("order status: %w", err)
+	}
 	var orderItemsData OrderItemsData
 	entityOrderItems, err := orderItemsData.MapToEntityList(o.OrderItems)
 	if err != nil {
-		return entity.Order{}, err
+		return entity.Order{}, fmt.Errorf("order items: %w", err)
 	}
 	order.SetOrderItems(entityOrderItems)
 	order.SetCreateAt(o.CreatedAt)

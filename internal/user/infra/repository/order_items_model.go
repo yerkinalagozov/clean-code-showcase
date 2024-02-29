@@ -62,7 +62,10 @@ func (o *OrderItemsData) MapToRepoList(orderItemsDataIn []entity.OrderItem) []Or
 func (o *OrderItemsData) MapToEntity() (entity.OrderItem, error) {
 	var orderItem entity.OrderItem
 	orderItem.SetID(o.ID)
-	orderItem.SetStatus(entity.OrderItemStatus(o.Status))
+	err := orderItem.SetOrderStatus(o.Status)
+	if err != nil {
+		return entity.OrderItem{}, err
+	}
 	orderItem.SetProduct(o.Product.MapToEntity())
 	orderItem.SetQuantity(o.Quantity)
 	orderItem.SetPriceAtOrder(o.PriceAtOrder)

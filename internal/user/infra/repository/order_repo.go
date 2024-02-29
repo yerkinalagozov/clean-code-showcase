@@ -21,6 +21,16 @@ func NewOrderRepo(pool dbconnection.Clients) *orderRepoImpl {
 	return &orderRepoImpl{pool: pool}
 }
 
+func (o *orderRepoImpl) Create(ctx context.Context, order ...entity.Order) ([]entity.Order, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (o *orderRepoImpl) DeleteOrder(ctx context.Context, orderID int) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (o *orderRepoImpl) CreateOrder(ctx context.Context, ordersIn ...entity.Order) ([]entity.Order, error) {
 	var orderData OrderData
 	ordersDataList := orderData.MapToRepoNewList(ordersIn)
@@ -53,7 +63,7 @@ func (o *orderRepoImpl) CreateOrder(ctx context.Context, ordersIn ...entity.Orde
 	return resultOrder.MapToEntityList(createdOrders)
 }
 
-func (o *orderRepoImpl) GetBy(ctx context.Context, orderQuery entity.OrderQuery) (entity.Order, error) {
+func (o *orderRepoImpl) GetByOrder(ctx context.Context, orderQuery entity.OrderQuery) (entity.Order, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	sqb := psql.Select("user", "status", "order_items", "created_at").From("orders")
 	sqb = o.generateUpdateWhere(sqb, orderQuery)
@@ -79,7 +89,7 @@ func (o *orderRepoImpl) GetBy(ctx context.Context, orderQuery entity.OrderQuery)
 	return order.MapToEntity()
 }
 
-func (o *orderRepoImpl) GetsBy(ctx context.Context, orderQuery entity.OrderQuery) ([]entity.Order, error) {
+func (o *orderRepoImpl) GetsByOrder(ctx context.Context, orderQuery entity.OrderQuery) ([]entity.Order, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	sqb := psql.Select("user", "status", "order_items", "created_at").From("orders")
 	sqb = o.generateUpdateWhere(sqb, orderQuery)
@@ -120,7 +130,7 @@ func (o *orderRepoImpl) GetsBy(ctx context.Context, orderQuery entity.OrderQuery
 }
 
 func (o *orderRepoImpl) Update(ctx context.Context, order ...entity.Order) (entity.Order, error) {
-
+	return entity.Order{}, commonentity.NewDatabaseError()
 }
 
 func (o *orderRepoImpl) generateUpdateWhere(sqb sq.SelectBuilder, orderQuery entity.OrderQuery) sq.SelectBuilder {

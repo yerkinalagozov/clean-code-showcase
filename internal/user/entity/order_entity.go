@@ -1,6 +1,8 @@
 package entity
 
-import "time"
+import (
+	"time"
+)
 
 type OrderStatus string
 
@@ -52,9 +54,24 @@ func (o *Order) OrderStatus() *OrderStatus {
 	return &o.status
 }
 
-func (o *Order) SetOrderStatus(orderStatus OrderStatus) {
-	o.status = orderStatus
-}
+//func (o *Order) SetOrderStatus(orderStatus string) error {
+//	var err error
+//	switch orderStatus {
+//	case string(OrderStatusCreated):
+//		o.status = OrderStatusCreated
+//	case string(OrderStatusCanceled):
+//		o.status = OrderStatusCanceled
+//	case string(OrderStatusPaid):
+//		o.status = OrderStatusPaid
+//	case string(OrderStatusDelivered):
+//		o.status = OrderStatusDelivered
+//	case string(OrderStatusRefunded):
+//		o.status = OrderStatusRefunded
+//	default:
+//		err = commonentity.ErrOrderStatusIsNotValid
+//	}
+//	return err
+//}
 
 func (o *Order) OrderItems() []OrderItem {
 	return o.orderItems

@@ -24,18 +24,24 @@ func NewService(userRepo IUserRepo, productRepo IProductRepo, orderRepo IOrderRe
 	}
 }
 
-func (s *service) NewUser(ctx context.Context, user entity.User) (entity.User, error) {
-	userID, err := s.userRepo.Create(ctx, user)
+func (s *service) NewUser(ctx context.Context, user NewUserReq) (int, error) {
+	newUser, err := user.MapToEntity()
 	if err != nil {
-		return entity.User{}, errors.WithMessagef(err, "service.NewUser.Create, failed to create user")
+		return 0, errors.WithMessagef(err, "service.NewUser.MapToEntity, failed to map user to entity")
 	}
-	user.SetID(userID)
-	return user, nil
+	newUserID, err := s.userRepo.Create(ctx, newUser)
+	if err != nil {
+		return 0, errors.WithMessagef(err, "service.NewUser.Create, failed to create user")
+	}
+	return newUserID[0].ID(), nil
 }
 
-func (s *service) NewOrder(ctx context.Context, orderIn entity.Order) (int, error) {
-	// Check order exist
-	existOrder, err := s.getOrder(ctx, orderIn)
+func (s *service) NewOrder(ctx context.Context, orderIn NewOrderReq) (int, error) {
+	newOrder, err := orderIn.MapToEntity()
+	if err != nil {
+		return 0, errors.WithMessagef(err, "service.NewOrder.MapToEntity, failed to map order to entity")
+	}
+	existOrder, err := s.getOrder(ctx, newOrder)
 	if err != nil {
 		return 0, errors.WithMessagef(err, "service.NewOrder.GetOrder, failed to get order")
 	}
@@ -43,35 +49,38 @@ func (s *service) NewOrder(ctx context.Context, orderIn entity.Order) (int, erro
 		return 0, errors.WithMessagef(err, "service.NewOrder, failed to check order, order %d already exist", existOrder.ID())
 	}
 	// Check user exist
-	existUser, err := s.getUser(ctx, orderIn.User())
+	existUser, err := s.getUser(ctx, newOrder.User())
 	if err != nil {
 		return 0, errors.WithMessagef(err, "service.NewOrder.GetUser, failed to get user")
 	}
 	// set user
-	orderIn.SetUser(existUser)
+	newOrder.SetUser(existUser)
 
 	// Check orderItem exist
-	existOrderItems, err := s.getOrdersItem(ctx, orderIn.OrderItems()...)
+	existOrderItems, err := s.getOrdersItem(ctx, newOrder.OrderItems()...)
 	if err != nil {
 		return 0, errors.WithMessagef(err, "service.NewOrder.GetOrderItem, failed to get orderItem")
 	}
 	// check len orderItem and len existOrderItem
-	if len(existOrderItems) != len(orderIn.OrderItems()) {
+	if len(existOrderItems) != len(newOrder.OrderItems()) {
 		return 0, errors.WithMessagef(err, "service.NewOrder, failed to check orderItem, orderItem %v already exist", existOrderItems)
 	}
 	// set orderItem
-	orderIn.SetOrderItems(existOrderItems)
+	newOrder.SetOrderItems(existOrderItems)
 	// Create order
-	orderID, err := s.orderRepo.Create(ctx, orderIn)
+	orderID, err := s.orderRepo.Create(ctx, newOrder)
 	if err != nil {
 		return 0, errors.WithMessagef(err, "service.NewOrder.Create, failed to create order")
 	}
-	return orderID, nil
+	return orderID[0].ID(), nil
 }
 
-func (s *service) NewOrderItems(ctx context.Context, orderItemsIn entity.OrderItem) (entity.OrderItem, error) {
-	// Check orderItem exist
-	orderItems, err := s.getOrderItem(ctx, orderItemsIn)
+func (s *service) NewOrderItems(ctx context.Context, orderItemsIn NewOrderItemReq) (entity.OrderItem, error) {
+	newOrderItem, err := orderItemsIn.MapToEntity()
+	if err != nil {
+		return entity.OrderItem{}, errors.WithMessagef(err, "service.NewOrderItems.MapToEntity, failed to map orderItem to entity")
+	}
+	orderItems, err := s.getOrderItem(ctx, newOrderItem)
 	if err != nil {
 		return entity.OrderItem{}, errors.WithMessagef(err, "service.NewOrderItems.GetOrderItem, failed to get orderItem")
 	}
@@ -168,13 +177,4 @@ func (s *service) getUser(ctx context.Context, user entity.User) (entity.User, e
 		return entity.User{}, errors.WithMessagef(err, "service.GetUser.IsEmpty, failed to check user, user %d not exist", existUser.ID())
 	}
 	return existUser, nil
-}
-
-func (s *service) NewProduct(ctx context.Context, product entity.ProductItems) (entity.ProductItems, error) {
-	productID, err := s.productRepo.Create(ctx, product)
-	if err != nil {
-		return entity.ProductItems{}, errors.WithMessagef(err, "service.NewProduct.Create, failed to create product")
-	}
-	product.SetID(productID)
-	return product, nil
 }
